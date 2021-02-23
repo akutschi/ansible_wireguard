@@ -1,0 +1,25 @@
+---
+# defaults file for ansible-wireguard
+
+# Interfaces
+wireguard_interface: 'wg0'
+public_interface: '{{ ansible_default_ipv4.interface }}'
+
+# Wireguard IPv4 subnet
+wireguard_network_ipv4: '192.168.42'
+
+# Wireguard IPv6 subnet
+wireguard_network_ipv6: 'fd91:34d4:2692:9dfb:'
+
+# Wireguard port
+wireguard_port: '51820'
+
+# DNS
+dns_ipv4_1: '1.1.1.1'
+dns_ipv4_2: '1.0.0.1'
+dns_ipv6_1: '2606:4700:4700::1111'
+dns_ipv6_2: '2606:4700:4700::1001'
+
+# Tunneles IPs
+wireguard_allowed_ipv4: '0.0.0.0/0'
+wireguard_allowed_ipv6: '::/0'

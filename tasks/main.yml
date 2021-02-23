@@ -1,0 +1,15 @@
+---
+# tasks file for ansible-wireguard
+
+- name : Install Wireguard
+  apt:
+    name: wireguard
+    state: present
+    update_cache: yes
+
+- name: Wireguard server configuration
+  include: 'server_configuration.yml'
+
+- name: Wireguard client keys and server configuration
+  include: 'client_configuration.yml'
+  when: (peers_list is defined) or (peers_list|length != 0)

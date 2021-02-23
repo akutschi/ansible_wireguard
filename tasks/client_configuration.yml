@@ -1,0 +1,63 @@
+---
+
+- name: Check that Wireguard configuration exists
+  stat:
+    path: /etc/wireguard/{{ wireguard_interface }}.conf
+  register: wireguard_stat_result
+
+- name: Get country code for server location
+  shell: curl ipinfo.io/country > country.txt && cat country.txt
+  register: server_country_code  
+  args:
+    warn: no 
+    chdir: /etc/wireguard
+  changed_when: False
+
+- name: Local directory for client configuration files
+  become: no
+  file:
+    path: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}"
+    state: directory
+  loop: "{{ peers_list }}"
+  delegate_to: localhost
+      
+- name: Create Wireguard client configuration files
+  become: no
+  template:
+    src: "templates/wireguard-client.conf.j2"
+    dest: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
+  loop: "{{ peers_list }}"
+  loop_control:
+    extended: yes
+  delegate_to: localhost
+
+# - name: Remote directory for client configuration files
+#   file:
+#     path: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}"
+#     state: directory
+#     owner: root
+#     group: root
+#     mode: 0600
+#   loop: "{{ peers_list }}"
+      
+# - name: Create Wireguard client configuration files
+#   template:
+#     src: "templates/wireguard-client.conf.j2"
+#     dest: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
+#     owner: root
+#     group: root
+#     mode: 0600
+#   loop: "{{ peers_list }}"
+#   loop_control:
+#     extended: yes
+
+- name: Register new Wireguard clients
+  template:
+    src: "templates/wireguard-server.conf.j2"
+    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - Reload Wireguard configuration
+
