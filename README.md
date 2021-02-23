@@ -137,7 +137,6 @@ If we want to add some peers, we can use the following play:
           wireguard_client_id: 1
         - username: 'janedoe'
           device: 'ipad'
-          wireguard_client_key: 'sdfdsfsdfsfdsfsknwfnwoiwcn'
           wireguard_client_pub: '09i43fn98noinrew98wifoijij'
           wireguard_client_id: 2
 ```
@@ -170,7 +169,6 @@ Now we add the parameters for the network and port:
           wireguard_client_id: 1
         - username: 'janedoe'
           device: 'ipad'
-          wireguard_client_key: 'sdfdsfsdfsfdsfsknwfnwonjustfakewcn'
           wireguard_client_pub: '09ijustfakeeeal98noinrew98wifoijij'
           wireguard_client_id: 2
       wireguard_network_ipv4: '10.42.42'
@@ -193,7 +191,6 @@ peers_list:
     wireguard_client_id: 1
   - username: 'janedoe'
     device: 'ipad'
-    wireguard_client_key: 'sdfdsfsdfsfdsfsknwfnwoiwcn'
     wireguard_client_pub: '09i43fn98noinrew98wifoijij'
     wireguard_client_id: 2
 wireguard_network_ipv4: '10.42.42'
