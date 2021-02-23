@@ -1,4 +1,2 @@
-* linguist-vendored
-*.py linguist-vendored=false
 *.yml linguist-language=YAML
-*.yml linguist-vendored=false
+
