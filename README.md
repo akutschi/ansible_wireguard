@@ -36,12 +36,14 @@ peers_list:
   - username: '<username>'
     device: '<device>'
     wireguard_client_pub: '<generate with: "umask 077; wg genkey > wg-vpn.key && echo -n "Secret Wireguard Key: " | cat - wg-vpn.key">'
-    wireguard_client_key: '<generate with: "wg pubkey < wg-vpn.key > wg-vpn.pub && echo -n "Public Wireguard Key: " | cat - wg-vpn.pub">'
+    wireguard_client_key: '<optional - generate with: "wg pubkey < wg-vpn.key > wg-vpn.pub && echo -n "Public Wireguard Key: " | cat - wg-vpn.pub">'
     wireguard_client_id: <number between 1 and 253>
 ```
 
 The `wireguard_client_id` must be unique and in the **range between 1 and 253**. 
 This ID will be used to assign an IPv4 and IPv6 address to the peer. 
+The `wireguard_client_key` is optional. A user can send you his public key and you create then the config file without the private key. 
+Send this configuration file back to the user, so that he can add his private key to connect to your VPN server.
 
 To create the keys you can use either the single commands above or this one-liner:
 
