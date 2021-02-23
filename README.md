@@ -8,18 +8,18 @@ This role can also create the config files for the connecting peers, when the pu
 
 - The current version requires Ubuntu 20.04 LTS.
 - To create the configuration files, Wireguard is required on the computer that deploys this role.
-- Ansible 2.8.x, this role is **not tested with Ansible 2.10** yet.
+- Ansible 2.9.x, this role is **not tested with Ansible 2.10** yet.
 
 ## Role Variables
 
-Here you can see all settable variables for this role. The defaults can be found in `default/mainyml`. 
-The defaults are - hopefully - chosen in reasonable way, so that no additional parameters must be set to the role.
+Here you can see all settable variables for this role. The defaults can be found in `default/main.yml`. 
+The defaults are chosen in a reasonable way, so that no additional parameters must be set to the role.
 
 | Variable | Default | Description
 |-|-|-|
 | wireguard_interface | `wg0` | Defines the name of the default interface for Wireguard
 | public_interface | `{{ ansible_default_ipv4.interface }}` | Sets the default public interface. By default this setting comes from the collected facts. |
-| wireguard_network_ipv4 | `192.168.42` | Sets the first 24 bits of the IPv4 network. |
+| wireguard_network_ipv4 | `192.168.42` | The first 24 bits of the IPv4 network. |
 wireguard_network_ipv6 | `d91:34d4:2692:9dfb:` | The first 64 bit of the IPv6 network. If you do not have your own IPv6 range, you can generate [here](https://simpledns.plus/private-ipv6) a random private IPv6 range. The default one is such a random private IPv6 range. |
 | wireguard_port | `51820` | The Wireguard port. The default one is the default one.
 | dns_ipv4_1 | `1.1.1.1` | Cloudflare [DNS server](https://1.1.1.1/). See also [Wikipedia](https://en.wikipedia.org/wiki/1.1.1.1)
@@ -50,7 +50,7 @@ $ umask 077; wg genkey > wg-vpn.key && echo -n "Secret Wireguard Key: " | cat - 
 ```
 
 Unlike other roles this one does not use the `wg-quick` command to add peers. 
-This one uses `syncconf`. 
+This one uses `syncconf`:
 
 > Man page for [wg(8)](https://manpages.debian.org/unstable/wireguard-tools/wg.8.en.html)
 >
@@ -59,7 +59,7 @@ This one uses `syncconf`.
 Every time you run this role, a Wireguard configuration file with all peers will be generated if peers are added, removed or changed. 
 This will trigger `syncconf` to execute the changes without disrupting connected peers.
 
-Without the `peers_list` just the Wireguard server itself will be installed and configured. 
+Without the dictionary `peers_list` the Wireguard server itself will be installed and configured. 
 
 ## Dependencies
 
@@ -96,10 +96,10 @@ As already mentioned, as long as no peers are added no additional parameters are
     hosts: wireguard
     become: yes
     roles:
-        - wireguard
+        - ansible-wireguard
 ```
 
-## Example playbook without adding peers but adding parameters:
+## Example playbook without adding peers but adding parameters
 
 Let's change the port and the IPv4 address range:
 
@@ -110,7 +110,7 @@ Let's change the port and the IPv4 address range:
     hosts: wireguard
     become: yes
     roles:
-        - wireguard
+        - ansible-wireguard
   vars:
     - wireguard_network_ipv4: '10.42.42'
     - wireguard_port: '4242'
@@ -147,7 +147,7 @@ This play will configure the server and add the two peers for John and Jane Doe.
 - `./files/wireguard.example.com/wg0_clients/johndoe/mbp15-US.conf`
 - `./files/wireguard.example.com/wg0_clients/janedoe/ipad-US.conf`
 
-Since I use this role to create VPN server in several countries, the country code will be appended.
+Since I use this role to create VPN servers in several countries, the country code will be appended.
 
 ## Example playbook with peers and parameters
 
@@ -160,7 +160,7 @@ Now we add the parameters for the network and port:
     hosts: wireguard
     become: yes
     roles:
-        - wireguard
+        - ansible-wireguard
     vars:
       peers_list:
         - username: 'johndoe'
@@ -179,8 +179,8 @@ Now we add the parameters for the network and port:
 
 ## Example playbook with separate files
 
-For this example we need the dictionary for `peers_list`. 
-For example a file called `wireguard.yml` in `host_vars`:
+For this example we need the dictionary for `peers_list` in a separate file. 
+For example in a file called `wireguard.yml` and located in `host_vars`:
 
 ```yml
 ---
@@ -200,7 +200,7 @@ wireguard_network_ipv4: '10.42.42'
 wireguard_port: '4242'
 ```
 
-And then we just run the same playbook like in the example without adding peers:
+And then we just run a playbook like in the example without adding peers:
 
 ```yml
 # wireguard-playbook.yml
@@ -208,10 +208,22 @@ And then we just run the same playbook like in the example without adding peers:
     hosts: wireguard
     become: yes
     roles:
-        - wireguard
+        - ansible-wireguard
 ```
 
-## Verify
+## Connect and Verify
+
+To connect with your Wireguard server use:
+
+```sh
+sudo wg-quick up <abs-or-rel-path-to-config-file>
+```
+
+And to disconnect just replace `up` with `down`:
+
+```sh
+sudo wg-quick down <abs-or-rel-path-to-config-file>
+```
 
 To verify your installation you can use [Browserleaks](https://browserleaks.com/ip) after a successful connection to your new VPN server.
 
