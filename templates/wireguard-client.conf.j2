@@ -1,7 +1,7 @@
 #jinja2: trim_blocks:False
 [Interface]
 PrivateKey = {% if item.wireguard_client_key is defined %}{{ item.wireguard_client_key }}{% else %}<Enter here your private key>{% endif %}
-Address = {{ wireguard_network_ipv4 }}.{{ item.wireguard_client_id + 1 }}/32, {{ wireguard_network_ipv6 }}:{{ (item.wireguard_client_id + 1)| hex_id }}128
+Address = {{ wireguard_network_ipv4 }}.{{ item.wireguard_client_id + 1 }}/32, {{ wireguard_network_ipv6 }}:{{ (item.wireguard_client_id + 1)| hex_id }}/128
 DNS = {{ dns_ipv4_1 }}, {{ dns_ipv4_2 }}, {{ dns_ipv6_1 }}, {{ dns_ipv6_2 }}
 
 [Peer]
