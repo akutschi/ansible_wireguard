@@ -1,5 +1,5 @@
 ---
-# vars file for ansible-wireguard
+# vars file for ansible_wireguard
 
 # peers_list:
 

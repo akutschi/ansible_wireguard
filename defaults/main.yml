@@ -1,5 +1,5 @@
 ---
-# defaults file for ansible-wireguard
+# defaults file for ansible_wireguard
 
 # Interfaces
 wireguard_interface: 'wg0'
@@ -20,6 +20,6 @@ dns_ipv4_2: '1.0.0.1'
 dns_ipv6_1: '2606:4700:4700::1111'
 dns_ipv6_2: '2606:4700:4700::1001'
 
-# Tunneles IPs
+# Tunneled IPs
 wireguard_allowed_ipv4: '0.0.0.0/0'
 wireguard_allowed_ipv6: '::/0'
