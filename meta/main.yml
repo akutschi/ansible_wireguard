@@ -10,6 +10,9 @@ galaxy_info:
   - name: Ubuntu
     versions:
       - 20.04
+  - name: Debian
+    versions:
+      - 10
 
   galaxy_tags:
     - wireguard
@@ -17,7 +20,8 @@ galaxy_info:
     - networking
     - security
     - linux
-
+    - ubuntu
+    - debian
 
 dependencies: []
   
