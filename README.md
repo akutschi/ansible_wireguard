@@ -1,5 +1,7 @@
 # Ansible WireGuard
 
+[![CI](https://github.com/akutschi/ansible_wireguard/actions/workflows/ci.yml/badge.svg)](https://github.com/akutschi/ansible_wireguard/actions/workflows/ci.yml)
+
 This Ansible role allows you to install a single or dual stack (IPv4 and IPv6) Wireguard VPN "server".
 You can also add an arbitrary number of peers, as long as the public key is provided. 
 This role can also create the config files for the connecting peers, when the public and private keys are provided.
