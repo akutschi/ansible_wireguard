@@ -19,14 +19,14 @@
     creates: wireguard-server.pub
     
 - name: Register private key
-  shell: cat wireguard-server.key
+  command: cat wireguard-server.key
   register: wireguard_server_key
   args:
     chdir: /etc/wireguard
   changed_when: False
 
 - name: Register public key
-  shell: cat wireguard-server.pub
+  command: cat wireguard-server.pub
   register: wireguard_server_pub
   args:
     chdir: /etc/wireguard
@@ -46,7 +46,7 @@
   systemd:
     name: wg-quick@{{ wireguard_interface }}.service
     state: stopped
-  when: wireguard_stat_result.stat.exists == false
+  when: not wireguard_stat_result.stat.exists
 
 - name: Generate Wireguard configuration
   template:
@@ -55,7 +55,7 @@
     owner: root
     group: root
     mode: 0600
-  when: wireguard_stat_result.stat.exists == false
+  when: not wireguard_stat_result.stat.exists
 
 - name: Enable and start Wireguard service
   systemd:
@@ -63,22 +63,23 @@
     enabled: yes
     state: started
 
-- name: Directory for Wireguard server configuration files
-  become: no
-  file:
-    path: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_server"
-    state: directory
-  delegate_to: localhost
+# - name: Directory for Wireguard server configuration files
+#   become: no
+#   file:
+#     path: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_server"
+#     state: directory
+#     mode: 0600
+#   delegate_to: localhost
       
-- name: Get Wireguard server configuration files
-  fetch:
-    src: "/etc/wireguard/{{ item }}"
-    dest: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_server/{{ item }}"
-    flat: yes
-  loop: 
-    - wireguard-server.pub
-    - wireguard-server.key
-    - "{{ wireguard_interface }}.conf"
+# - name: Get Wireguard server configuration files
+#   fetch:
+#     src: "/etc/wireguard/{{ item }}"
+#     dest: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_server/{{ item }}"
+#     flat: yes
+#   loop: 
+#     - wireguard-server.pub
+#     - wireguard-server.key
+#     - "{{ wireguard_interface }}.conf"
 
 - name: Enable IPv4 traffic forwarding
   sysctl:
@@ -87,6 +88,7 @@
     sysctl_set: yes
     state: present
     reload: yes
+  when: wireguard_enable_ipv4
 
 - name: Enable IPv6 traffic forwarding
   sysctl:
@@ -95,20 +97,4 @@
     sysctl_set: yes
     state: present
     reload: yes
-
-- name: Install ufw
-  apt:
-    name:
-      - ufw
-    state: present
-    update_cache: yes
-
-- name: Modify ufw for Wireguard
-  ufw:
-    rule: allow
-    to_port: "{{ item.port }}"
-    proto: "{{ item.prot }}"
-    state: enabled
-  loop:
-    - { port: '22', prot: 'tcp'}
-    - { port: '51820', prot: 'udp'}
+  when: wireguard_enable_ipv6

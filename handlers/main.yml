@@ -6,4 +6,3 @@
   args:
     executable: /bin/bash
   changed_when: False
-

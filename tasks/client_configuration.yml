@@ -5,6 +5,13 @@
     path: /etc/wireguard/{{ wireguard_interface }}.conf
   register: wireguard_stat_result
 
+- name: Install requirements
+  apt:
+    name: 
+      - curl
+    state: present
+    update_cache: true
+
 - name: Get country code for server location
   shell: curl ipinfo.io/country > country.txt && cat country.txt
   register: server_country_code  
@@ -13,51 +20,58 @@
     chdir: /etc/wireguard
   changed_when: False
 
-- name: Local directory for client configuration files
-  become: no
-  file:
-    path: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}"
-    state: directory
-  loop: "{{ peers_list }}"
-  delegate_to: localhost
-      
-- name: Create Wireguard client configuration files
-  become: no
-  template:
-    src: "templates/wireguard-client.conf.j2"
-    dest: "./files/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
-  loop: "{{ peers_list }}"
-  loop_control:
-    extended: yes
-  delegate_to: localhost
+- name: Create client configuration files locally
+  block:
+    - name: Local directory for client configuration files
+      become: no
+      file:
+        path: "./files-wireguard/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}"
+        state: directory
+        mode: 0600
+      loop: "{{ peers_list }}"
+      delegate_to: localhost
+          
+    - name: Create Wireguard client configuration files
+      become: no
+      template:
+        src: "templates/wireguard-client.conf.j2"
+        dest: "./files-wireguard/{{ ansible_hostname }}/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
+        mode: 0600
+      loop: "{{ peers_list }}"
+      loop_control:
+        extended: yes
+      delegate_to: localhost
+  when: not wireguard_client_files_remote
 
-# - name: Remote directory for client configuration files
-#   file:
-#     path: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}"
-#     state: directory
-#     owner: root
-#     group: root
-#     mode: 0600
-#   loop: "{{ peers_list }}"
-      
-# - name: Create Wireguard client configuration files
+- name: Create client configuration files remotely
+  block:
+    - name: Remote directory for client configuration files
+      file:
+        path: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0600
+      loop: "{{ peers_list }}"
+
+    - name: Create Wireguard client configuration files
+      template:
+        src: "templates/wireguard-client.conf.j2"
+        dest: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
+        owner: root
+        group: root
+        mode: 0600
+      loop: "{{ peers_list }}"
+      loop_control:
+        extended: yes
+  when: wireguard_client_files_remote
+
+# - name: Register new Wireguard clients
 #   template:
-#     src: "templates/wireguard-client.conf.j2"
-#     dest: "/etc/wireguard/{{ wireguard_interface }}_clients/{{ item.username }}/{{ item.device }}-{{ server_country_code.stdout }}.conf"
+#     src: "templates/wireguard-server.conf.j2"
+#     dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
 #     owner: root
 #     group: root
 #     mode: 0600
-#   loop: "{{ peers_list }}"
-#   loop_control:
-#     extended: yes
-
-- name: Register new Wireguard clients
-  template:
-    src: "templates/wireguard-server.conf.j2"
-    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
-    owner: root
-    group: root
-    mode: 0600
-  notify:
-    - Reload Wireguard configuration
-
+#   notify:
+#     - Reload Wireguard configuration

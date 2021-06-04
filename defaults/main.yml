@@ -1,6 +1,13 @@
 ---
 # defaults file for ansible_wireguard
 
+# IP stacks
+wireguard_enable_ipv4: true
+wireguard_enable_ipv6: true
+
+# Storage location of client configuration files
+wireguard_client_files_remote: true
+
 # Interfaces
 wireguard_interface: 'wg0'
 public_interface: '{{ ansible_default_ipv4.interface }}'

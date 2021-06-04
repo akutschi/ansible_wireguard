@@ -1,11 +1,13 @@
 ---
 # tasks file for ansible_wireguard
 
-- name : Install Wireguard
+- name: Install Wireguard and dependencies
   apt:
-    name: wireguard
+    name: 
+      - wireguard
+      - iptables
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Wireguard server configuration
   include: 'server_configuration.yml'

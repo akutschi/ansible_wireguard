@@ -1,14 +1,35 @@
 # Ansible WireGuard
 
-This Ansible role allows you to install a dual stack (IPv4 and IPv6) Wireguard VPN "server".
+This Ansible role allows you to install a single or dual stack (IPv4 and IPv6) Wireguard VPN "server".
 You can also add an arbitrary number of peers, as long as the public key is provided. 
 This role can also create the config files for the connecting peers, when the public and private keys are provided.
 
 ## Requirements
 
-- The current version requires Ubuntu 20.04 LTS.
-- To create the configuration files, Wireguard is required on the computer that deploys this role.
-- Ansible 2.9.x, this role is **not tested with Ansible 2.10** yet.
+This role does not have any requirements.
+
+## Coverage
+
+Any combination of the following is tested:
+
+- Operating System
+  - Ubuntu 20.04 LTS
+  - Debian 10
+- Ansible
+  - 2.9.x
+  - 3.x
+  - 4.x 
+- Python
+  - 3.8
+  - 3.9
+
+## Install Role
+
+To install this role into your `roles` folder just clone, download or run: 
+
+```bash
+ansible-galaxy install --roles-path ./roles git+https://github.com/akutschi/ansible_wireguard.git,v0.1.0
+```
 
 ## Role Variables
 
@@ -17,6 +38,9 @@ The defaults are chosen in a reasonable way, so that no additional parameters mu
 
 | Variable | Default | Description
 |-|-|-|
+| wireguard_enable_ipv4 | `true` | _Enable_ IPv4 stack in WireGuard. |
+| wireguard_enable_ipv6 | `true` | _Enable_ IPv6 stack in WireGuard. |
+| wireguard_client_files_remote | `true` | Store client configuration files remotely. If set `false` the client files will be stored locally. |
 | wireguard_interface | `wg0` | Defines the name of the default interface for Wireguard
 | public_interface | `{{ ansible_default_ipv4.interface }}` | Sets the default public interface. By default this setting comes from the collected facts. |
 | wireguard_network_ipv4 | `192.168.42` | The first 24 bits of the IPv4 network. |
@@ -35,14 +59,14 @@ Additionally, if clients should be added with this role a dictionary like the fo
 peers_list:
   - username: '<username>'
     device: '<device>'
-    wireguard_client_pub: '<generate with: "umask 077; wg genkey > wg-vpn.key && echo -n "Secret Wireguard Key: " | cat - wg-vpn.key">'
-    wireguard_client_key: '<optional - generate with: "wg pubkey < wg-vpn.key > wg-vpn.pub && echo -n "Public Wireguard Key: " | cat - wg-vpn.pub">'
+    wireguard_client_key: '<generate with: "umask 077; wg genkey > wg-vpn.key && echo -n "Secret Wireguard Key: " | cat - wg-vpn.key">'
+    wireguard_client_pub: '<optional - generate with: "wg pubkey < wg-vpn.key > wg-vpn.pub && echo -n "Public Wireguard Key: " | cat - wg-vpn.pub">'
     wireguard_client_id: <number between 1 and 253>
 ```
 
 The `wireguard_client_id` must be unique and in the **range between 1 and 253**. 
 This ID will be used to assign an IPv4 and IPv6 address to the peer. 
-The `wireguard_client_key` is optional. A user can send you his public key and you create then the config file without the private key. 
+**The `wireguard_client_key` is optional**. A user can send you his public key and you create then the config file without the private key. 
 Send this configuration file back to the user, so that he can add his private key to connect to your VPN server.
 
 To create the keys you can use either the single commands above or this one-liner:
@@ -58,7 +82,7 @@ This one uses `syncconf`:
 >
 >  [syncconf] reads back the existing configuration first and only makes changes that are explicitly different between the configuration file and the interface. This is much less efficient than setconf, but has the benefit of not disrupting current peer sessions.
 
-Every time you run this role, a Wireguard configuration file with all peers will be generated if peers are added, removed or changed. 
+Every time you run this role, a Wireguard configuration file with all peers will be generated when peers are added, removed or changed. 
 This will trigger `syncconf` to execute the changes without disrupting connected peers.
 
 Without the dictionary `peers_list` the Wireguard server itself will be installed and configured. 
@@ -89,7 +113,8 @@ wireguard:
 
 ## Example playbook without adding peers
 
-As already mentioned, as long as no peers are added no additional parameters are required. Playbook without adding peers:
+As already mentioned, as long as no peers are added no additional parameters are required. 
+Playbook without adding peers:
 
 ```yml
 ---
@@ -143,12 +168,16 @@ If we want to add some peers, we can use the following play:
           wireguard_client_id: 2
 ```
 
-This play will configure the server and add the two peers for John and Jane Doe. The config files will be stored locally and should have the following path and names:
+This play will configure the server and add two peers for John and Jane Doe. 
+The config files will be stored locally  if `wireguard_client_files_remote` is set to `false` and should have the following path and names:
 
-- `./files/wireguard.example.com/wg0_clients/johndoe/mbp15-US.conf`
-- `./files/wireguard.example.com/wg0_clients/janedoe/ipad-US.conf`
+- `./files-wireguard/wireguard.example.com/wg0_clients/johndoe/mbp15-US.conf`
+- `./files-wireguard/wireguard.example.com/wg0_clients/janedoe/ipad-US.conf`
 
-Since I use this role to create VPN servers in several countries, the country code will be appended.
+If the default setting for `wireguard_client_files_remote` remains unchanged the paths to the files are 
+
+- `/etc/wireguard/wg0_clients/johndoe/` and 
+- `/etc/wireguard/wg0_clients/janedoe/`.
 
 ## Example playbook with peers and parameters
 
@@ -227,7 +256,6 @@ sudo wg-quick down <abs-or-rel-path-to-config-file>
 To verify your installation you can use [Browserleaks](https://browserleaks.com/ip) after a successful connection to your new VPN server.
 
 # License
-
 
 GPLv3, see [license](./LICENSE).
 
