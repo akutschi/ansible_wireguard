@@ -4,6 +4,16 @@
   become: yes
   vars:
     - wireguard_enable_ipv6: false
+    - peers_list:
+        - username: 'johndoe'
+          device: 'mbp15'
+          wireguard_client_key: 'q3498rhfiuber98fn43qc98qe4'
+          wireguard_client_pub: 'nu43p98fnf4nq3n3q84nf83n43'
+          wireguard_client_id: 1
+        - username: 'janedoe'
+          device: 'ipad'
+          wireguard_client_pub: '09i43fn98noinrew98wifoijij'
+          wireguard_client_id: 2
   tasks:
     - name: Include role
       include_role: 
