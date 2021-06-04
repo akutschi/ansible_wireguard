@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  become: yes
+  vars:
+    - wireguard_enable_ipv6: false
+  tasks:
+    - name: Include role
+      include_role: 
+        name: ansible_wireguard
